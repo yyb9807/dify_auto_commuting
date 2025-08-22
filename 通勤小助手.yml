@@ -1,0 +1,509 @@
+app:
+  description: ''
+  icon: horse_racing
+  icon_background: '#E0EAFF'
+  mode: advanced-chat
+  name: 通勤小助手
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai:0.0.23@5b670a358c9d1293a4d74e34835f25578d301e61f8c0a506b5d83b8e8e9945bd
+kind: app
+version: 0.3.1
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: ''
+    id: 78570f1f-4141-43df-a880-a80fd10c7797
+    name: WEBHOOK_URL
+    selector:
+    - env
+    - WEBHOOK_URL
+    value: https://script.google.com/macros/s/AKfycbx-wiqKeFrOfslgPAvST8bxe_bzoHgNI2Je4N1vOsL3emAx420pAZcdCZh4f2_-hwG3Cg/exec
+    value_type: string
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: if-else
+      id: llm-source-1755846468666-target
+      selected: false
+      source: llm
+      sourceHandle: source
+      target: '1755846468666'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1755846468666-false-answer-target
+      selected: false
+      source: '1755846468666'
+      sourceHandle: 'false'
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1755846468666-true-1755846681288-target
+      selected: false
+      source: '1755846468666'
+      sourceHandle: 'true'
+      target: '1755846681288'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: if-else
+      id: 1755846681288-source-1755847478716-target
+      selected: false
+      source: '1755846681288'
+      sourceHandle: source
+      target: '1755847478716'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1755847478716-false-17558467596720-target
+      selected: false
+      source: '1755847478716'
+      sourceHandle: 'false'
+      target: '17558467596720'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1755847478716-true-1755846750384-target
+      selected: false
+      source: '1755847478716'
+      sourceHandle: 'true'
+      target: '1755846750384'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: code
+      id: 1755844199425-source-1755853961705-target
+      source: '1755844199425'
+      sourceHandle: source
+      target: '1755853961705'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1755853961705-source-llm-target
+      source: '1755853961705'
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 53
+      id: '1755844199425'
+      position:
+        x: -33.75802863043296
+        y: -26.549173545557792
+      positionAbsolute:
+        x: -33.75802863043296
+        y: -26.549173545557792
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 10
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4o
+          provider: langgenius/openai/openai
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 5e8a1d0d-e4fe-4d20-a5ef-0ad81ccb18e6
+          role: system
+          text: "你是一个通勤事件解析器，任务是把用户的自然语言描述转换成结构化 JSON（严格符合预设的 JSON Schema，不要输出解释或代码块，只能输出\
+            \ JSON）。\n\n【时间与时区规则】\n- 所有日期和时间都必须使用北京时间 (UTC+8, Asia/Shanghai)。\n- 当前北京时间（ISO）：{{#1755853961705.now_iso8#}}\n\
+            - 今天（北京时间）：{{#1755853961705.today_ymd#}}\n- time_local 必须是 ISO8601 格式，并显式包含\
+            \ +08:00，例如 2025-08-22T18:30:00+08:00。\n- date_local 必须是与 time_local 对应的北京时间日期\
+            \ (YYYY-MM-DD)。\n\n【相对时间处理】\n- 如果用户说“今天/今早/今晚/现在”，则 date_local = {{#1755853961705.today_ymd#}}。\n\
+            - 如果用户只给了时分（例如“15:00”），则拼接成 {{#1755853961705.now_iso8#}}T15:00:00+08:00。\n\
+            - 如果用户给了完整 ISO 时间（可能是别的时区），必须换算为北京时间 (+08:00) 再输出。\n\n【字段要求】\n- event：必须是以下四个枚举之一\
+            \  \n  - depart_home（出门）  \n  - arrive_office（到公司）  \n  - depart_office（下班出发）\
+            \  \n  - arrive_home（到家）  \n- time_local：北京时间 ISO8601，必须显式 +08:00  \n\
+            - date_local：北京时间当天的 YYYY-MM-DD  \n- commute_mode：可选，如 地铁 / 公交 / 步行 /\
+            \ 驾车 / 骑行  \n- note：可选，任意备注文本  \n\n【口语映射】\n- “出门”“出发去公司”“去上班”“从家出发” →\
+            \ depart_home  \n- “到公司”“到单位”“上班打卡”“已到公司” → arrive_office  \n- “下班”“下班出发”“离开公司”“从公司出发”\
+            \ → depart_office  \n- “回家”“到家”“到家了”“回到家” → arrive_home  \n\n【容错】\n- 如果缺少日期，默认用\
+            \ {{#1755853961705.today_ymd#}}。  \n- 如果缺少时间，默认用当前北京时间 {{#1755853961705.now_iso8#}}。\
+            \  \n- 必须始终只输出一个 JSON，字段名必须与 Schema 一致。  \n\n【示例】\n用户输入：今天 15:00 下班  \n\
+            模型输出：{\"event\":\"depart_office\",\"time_local\":\"{{#1755853961705.today_ymd#}}T15:00:00+08:00\"\
+            ,\"date_local\":\"{{#1755853961705.today_ymd#}}\"}\n\n用户输入：8:30 出门 坐公交\
+            \  \n模型输出：{\"event\":\"depart_home\",\"time_local\":\"{{#1755853961705.today_ymd#}}T08:30:00+08:00\"\
+            ,\"date_local\":\"{{#1755853961705.today_ymd#}}\",\"commute_mode\":\"\
+            公交\"}\n\n用户输入：19:05 到家 路上堵车  \n模型输出：{\"event\":\"arrive_home\",\"time_local\"\
+            :\"{{#1755853961705.today_ymd#}}T19:05:00+08:00\",\"date_local\":\"{{#1755853961705.today_ymd#}}\"\
+            ,\"note\":\"路上堵车\"}\n"
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              commute_mode:
+                type: string
+              date_local:
+                pattern: ^\d{4}-\d{2}-\d{2}$
+                type: string
+              event:
+                enum:
+                - depart_home
+                - arrive_office
+                - depart_office
+                - arrive_home
+                type: string
+              note:
+                type: string
+              time_local:
+                pattern: ^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?\+08:00$
+                type: string
+            required:
+            - event
+            - time_local
+            - date_local
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 89
+      id: llm
+      position:
+        x: 381.1535895010518
+        y: 282
+      positionAbsolute:
+        x: 381.1535895010518
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        answer: 「抱歉，我没抓到必要的信息。请告诉我事件（出门/到公司/下班出发/到家）和时间（例如 8:30）。」
+        desc: ''
+        selected: false
+        title: 失败分支 → 回复节点
+        type: answer
+        variables: []
+      height: 133
+      id: answer
+      position:
+        x: 984.4766276846226
+        y: 450.5246241017175
+      positionAbsolute:
+        x: 984.4766276846226
+        y: 450.5246241017175
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not empty
+            id: 6da3ef31-4d89-4192-8ecf-b54a467b3e27
+            value: ''
+            varType: object
+            variable_selector:
+            - llm
+            - structured_output
+            - event
+          - comparison_operator: not empty
+            id: 4d55e79e-5884-44df-a190-73cee91628aa
+            value: ''
+            varType: object
+            variable_selector:
+            - llm
+            - structured_output
+            - time_local
+          - comparison_operator: not empty
+            id: c81e7030-6946-4561-a74e-f74619ef4ce6
+            value: ''
+            varType: object
+            variable_selector:
+            - llm
+            - structured_output
+            - date_local
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 177
+      id: '1755846468666'
+      position:
+        x: 665.0315956452109
+        y: 282
+      positionAbsolute:
+        x: 665.0315956452109
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-134
+            key: ''
+            type: text
+            value: "{\n  \"date\": {{#llm.structured_output.date_local#}},   // 必须是\
+              \ YYYY-MM-DD\n  \"event\": {{#llm.structured_output.event#}},\n  \"\
+              time\": {{#llm.structured_output.time_local#}},   // ISO 带 +08:00 OK\n\
+              \  \"commute_mode\": {{#llm.structured_output.commute_mode#}},\n  \"\
+              note\": {{#llm.structured_output.note#}}\n}\n"
+          type: json
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求
+        type: http-request
+        url: '{{#env.WEBHOOK_URL#}}'
+        variables: []
+      height: 126
+      id: '1755846681288'
+      position:
+        x: 999.4565942714419
+        y: 190.03881504002103
+      positionAbsolute:
+        x: 999.4565942714419
+        y: 190.03881504002103
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        answer: '✅ 已记录：
+
+          - 日期：{{#llm.structured_output.time_local#}}
+
+          - 事件：{{#llm.structured_output.event#}}
+
+          - 时间：{{#llm.structured_output.time_local#}}
+
+          - 方式：{{#llm.structured_output.commute_mode#}}
+
+          - 备注：{{#llm.structured_output.note#}}'
+        desc: ''
+        selected: false
+        title: 成功回复
+        type: answer
+        variables: []
+      height: 196
+      id: '1755846750384'
+      position:
+        x: 1654.4949904387702
+        y: 71.44741289436797
+      positionAbsolute:
+        x: 1654.4949904387702
+        y: 71.44741289436797
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        answer: '❌ 写入失败：{{#1755846681288.body#}}
+
+          请稍后再试，或把这条信息发给我排查。'
+        desc: ''
+        selected: false
+        title: '失败回复 '
+        type: answer
+        variables: []
+      height: 136
+      id: '17558467596720'
+      position:
+        x: 1654.4949904387702
+        y: 379.36978281432573
+      positionAbsolute:
+        x: 1654.4949904387702
+        y: 379.36978281432573
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: '='
+            id: f4ba1fa4-cc33-44ac-b9e9-4c67d25d9748
+            value: '200'
+            varType: number
+            variable_selector:
+            - '1755846681288'
+            - status_code
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 写入成功
+        type: if-else
+      height: 125
+      id: '1755847478716'
+      position:
+        x: 1325.058639016856
+        y: 190.03881504002103
+      positionAbsolute:
+        x: 1325.058639016856
+        y: 190.03881504002103
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    - data:
+        code: "import datetime\n\ndef main() -> dict:\n    tz = datetime.timezone(datetime.timedelta(hours=8))\
+          \  # 北京时区\n    now = datetime.datetime.now(tz)\n    return {\n        \"\
+          today_ymd\": now.strftime('%Y-%m-%d'),                 # 2025-08-22\n  \
+          \      \"now_iso8\":  now.strftime('%Y-%m-%dT%H:%M:%S+08:00'),  # 2025-08-22T15:00:00+08:00\n\
+          \    }\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          now_iso8:
+            children: null
+            type: string
+          today_ymd:
+            children: null
+            type: string
+        selected: false
+        title: 代码执行
+        type: code
+        variables: []
+      height: 53
+      id: '1755853961705'
+      position:
+        x: 268.9538900299398
+        y: 125.03503185371957
+      positionAbsolute:
+        x: 268.9538900299398
+        y: 125.03503185371957
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 243
+    viewport:
+      x: -487.1726979922478
+      y: 283.6986461681856
+      zoom: 0.46009382531243775
