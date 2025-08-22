@@ -1,117 +1,181 @@
-# dify_auto_commuting
+# 🚇 通勤打卡自动记录 (Dify + Google Sheets)
 
-[English](#english) | [中文](#中文)
+<details open>
+<summary>🇨🇳 中文说明 (Chinese)</summary>
+
+## 📌 简介
+本项目实现了一个**通勤打卡自动化工作流**：  
+你只需要输入 **“今天 8:30 出门”** 或 **“19:05 到家 路上堵车”**，系统会自动解析日期/时间/事件类型/通勤方式，并写入 Google Sheets。  
+
+- 使用 [Dify](https://dify.ai/) 作为 LLM 工作流平台  
+- 使用 Google Apps Script 提供 Webhook 写入 Google Sheets  
+- 使用 JSON Schema + Prompt 强约束，保证所有时间戳都是 **北京时间 (UTC+8)**  
 
 ---
 
-## 中文
+## 🏗️ 架构
+```
+用户输入 → Dify LLM (解析语义) → JSON Schema → HTTP 请求 → Google Apps Script → Google Sheets
+```
 
-一个基于 [Dify](https://dify.ai/) 平台的自动化通勤辅助项目。  
-通过 Dify 提供的工作流功能，你可以快速构建并运行日常通勤相关的自动化流程。
+---
 
-### 功能特性
+## ⚙️ 部署步骤
 
-- **自动化工作流**：利用 Dify 工作流引擎，实现通勤场景下的自动化操作。  
-- **可扩展性**：可以根据需求修改或扩展 DSL 文件，定制自己的逻辑。  
-- **一键导入**：直接将 DSL 文件导入到 Dify 控制台即可使用。
+### 1. Google Sheets
+1. 新建一个表格，底部标签命名为 `trans`  
+2. 设置表头（第 1 行）：
 
-### 使用方法
+| 日期 | 通勤方式（上班） | 出门时间 | 到达时间 | 下班打卡 | 到家 | 通勤方式（下班） | 备注 |
+| ---- | --------------- | -------- | -------- | -------- | ---- | ---------------- | ---- |
 
-1. 克隆本仓库：
-   ```bash
-   git clone git@github.com:yyb9807/dify_auto_commuting.git
-   cd dify_auto_commuting
-   ```
+3. 进入 **文件 → 设置 → 时区**，改为 **(GMT+8) 北京时间**。  
 
-2. 打开 [Dify 控制台](https://dify.ai/) → **工作流**  
-3. 点击 **导入 DSL 文件**，选择仓库中的 [`workflow.dsl.json`](./workflow.dsl.json)  
-4. 成功导入后，即可在 Dify 平台中运行和测试
+---
 
-### DSL 文件说明
+### 2. Google Apps Script
+1. 打开 [Google Apps Script](https://script.google.com/)  
+2. 新建脚本，粘贴 [script.js](./script.js)（记得替换 `SPREADSHEET_ID` 为你的表格 ID）  
+3. 部署为 **Web 应用**：  
+   - 选择“任何人可访问”  
+   - 得到 Webhook URL，例如：  
+     ```
+     https://script.google.com/macros/s/xxxxxxx/exec
+     ```
 
-本仓库包含一个从 Dify 导出的 **DSL 文件**：  
+---
 
-- 文件名：[`workflow.dsl.json`](./workflow.dsl.json)  
-- 作用：描述本项目的工作流逻辑（节点配置、输入输出、数据流转等）。  
+### 3. Dify 工作流
 
-#### DSL 内容示例
+#### (1) Python 代码节点
+见 [prompt.md](./prompt.md) 中说明。此节点主要返回 **今天日期** 和 **当前北京时间**。  
 
+#### (2) LLM Prompt  
+使用 `prompt.md` 提供的完整 Prompt，确保 JSON 输出严格符合 Schema。  
+
+#### (3) JSON Schema
+同样在 `prompt.md` 中，强制约束：  
+- 时间必须为 `YYYY-MM-DDTHH:mm:ss+08:00`  
+- 日期必须为 `YYYY-MM-DD`  
+
+#### (4) HTTP 节点
+- Method: `POST`  
+- URL: Google Apps Script 部署的地址  
+- Headers: `Content-Type: application/json; charset=utf-8`  
+- Body 示例：  
 ```json
 {
-  "version": "1.0",
-  "nodes": [
-    {
-      "id": "input",
-      "type": "Input",
-      "properties": {
-        "placeholder": "请输入通勤信息"
-      }
-    },
-    {
-      "id": "output",
-      "type": "Output",
-      "properties": {}
-    }
-  ]
+  "date": "{{#llm.structured_output.date_local#}}",
+  "event": "{{#llm.structured_output.event#}}",
+  "time": "{{#llm.structured_output.time_local#}}",
+  "commute_mode": "{{#llm.structured_output.commute_mode#}}",
+  "note": "{{#llm.structured_output.note#}}"
 }
 ```
 
 ---
 
-## English
+## ✅ 使用示例
+输入：  
+```
+今天 8:30 出门 坐公交
+```
 
-An automation commuting assistant project based on the [Dify](https://dify.ai/) platform.  
-With the workflow feature provided by Dify, you can quickly build and run automation processes for daily commuting.
+写入 Google Sheets：  
 
-### Features
+| 日期       | 通勤方式（上班） | 出门时间        | 到达时间 | 下班打卡 | 到家 | 通勤方式（下班） | 备注 |
+| ---------- | ---------------- | --------------- | -------- | -------- | ---- | ---------------- | ---- |
+| 2025-08-22 | 公交             | 2025-08-22 08:30 |          |          |      |                  |      |
 
-- **Automated Workflow**: Use the Dify workflow engine to automate commuting tasks.  
-- **Extensible**: You can modify or extend the DSL file to customize your own logic.  
-- **One-click Import**: Import the DSL file into the Dify console for direct use.
+</details>
 
-### Usage
+---
 
-1. Clone this repository:
-   ```bash
-   git clone git@github.com:yyb9807/dify_auto_commuting.git
-   cd dify_auto_commuting
-   ```
+<details>
+<summary>🇬🇧 English (Click to expand)</summary>
 
-2. Open [Dify Console](https://dify.ai/) → **Workflow**  
-3. Click **Import DSL File**, select [`workflow.dsl.json`](./workflow.dsl.json)  
-4. After importing successfully, you can run and test it in the Dify platform
+## 📌 Introduction
+This project implements an **automated commuting log workflow**.  
+You can simply type **“Go out at 8:30 today”** or **“Arrived home at 19:05, traffic jam”**, and the system will parse the event into structured JSON and write it into Google Sheets.  
 
-### DSL File Description
+- [Dify](https://dify.ai/) as the LLM workflow engine  
+- Google Apps Script as the webhook writer for Google Sheets  
+- JSON Schema + Prompt hard constraints to ensure all timestamps are **Beijing Time (UTC+8)**  
 
-This repository contains a **DSL file** exported from Dify:  
+---
 
-- Filename: [`workflow.dsl.json`](./workflow.dsl.json)  
-- Purpose: Describes the workflow logic of this project (node configuration, inputs, outputs, and data flow).  
+## 🏗️ Architecture
+```
+User input → Dify LLM (semantic parsing) → JSON Schema → HTTP Request → Google Apps Script → Google Sheets
+```
 
-#### Example DSL Content
+---
 
+## ⚙️ Setup
+
+### 1. Google Sheets
+1. Create a new spreadsheet, tab named `trans`  
+2. Add headers (row 1):  
+
+| Date | Commute Mode (AM) | Depart Home | Arrive Office | Depart Office | Arrive Home | Commute Mode (PM) | Note |
+| ---- | ----------------- | ----------- | ------------- | ------------- | ----------- | ----------------- | ---- |
+
+3. Go to **File → Settings → Time zone**, set to **(GMT+8) Beijing Time**.  
+
+---
+
+### 2. Google Apps Script
+1. Go to [Google Apps Script](https://script.google.com/)  
+2. Create a new project, paste [script.js](./script.js) (replace `SPREADSHEET_ID` with your spreadsheet ID)  
+3. Deploy as **Web App**:  
+   - Select “Anyone can access”  
+   - Get the Webhook URL, e.g.:  
+     ```
+     https://script.google.com/macros/s/xxxxxxx/exec
+     ```
+
+---
+
+### 3. Dify Workflow
+
+#### (1) Python Code Node
+See [prompt.md](./prompt.md). This node mainly returns **today’s date** and **current Beijing time**.  
+
+#### (2) LLM Prompt  
+Use the full prompt from `prompt.md` to ensure strict JSON Schema output.  
+
+#### (3) JSON Schema
+Also in `prompt.md`, enforces constraints:  
+- Time must be `YYYY-MM-DDTHH:mm:ss+08:00`  
+- Date must be `YYYY-MM-DD`  
+
+#### (4) HTTP Node
+- Method: `POST`  
+- URL: your deployed Google Script URL  
+- Headers: `Content-Type: application/json; charset=utf-8`  
+- Body Example:  
 ```json
 {
-  "version": "1.0",
-  "nodes": [
-    {
-      "id": "input",
-      "type": "Input",
-      "properties": {
-        "placeholder": "Enter commuting info"
-      }
-    },
-    {
-      "id": "output",
-      "type": "Output",
-      "properties": {}
-    }
-  ]
+  "date": "{{#llm.structured_output.date_local#}}",
+  "event": "{{#llm.structured_output.event#}}",
+  "time": "{{#llm.structured_output.time_local#}}",
+  "commute_mode": "{{#llm.structured_output.commute_mode#}}",
+  "note": "{{#llm.structured_output.note#}}"
 }
 ```
 
 ---
 
-## License
+## ✅ Example
+Input:  
+```
+Go out at 8:30 today by bus
+```
 
-This project is licensed under the [MIT License](./LICENSE).
+Written into Google Sheets:  
+
+| Date       | Commute Mode (AM) | Depart Home   | Arrive Office | Depart Office | Arrive Home | Commute Mode (PM) | Note |
+| ---------- | ----------------- | ------------- | ------------- | ------------- | ----------- | ----------------- | ---- |
+| 2025-08-22 | Bus               | 2025-08-22 08:30 |             |               |             |                   |      |
+
+</details>
